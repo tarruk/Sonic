@@ -42,7 +42,7 @@ final class APICaller {
         }
     }
     
-    public func getRecommendations(genres: Set<String>, completion: @escaping(Result<RecommendedGenres, Error>) -> Void) {
+    public func getRecommendations(genres: Set<String>, completion: @escaping(Result<Recommendation, Error>) -> Void) {
         let seeds = genres.joined(separator: ",")
         createRequest(with: URL(string: "\(Constants.baseAPIURL)/recommendations?seed_genres=\(seeds)"), type: .GET) { [weak self] baseRequest in
             self?.createTask(with: baseRequest, completion: { result in
@@ -60,7 +60,7 @@ final class APICaller {
     }
     
     public func getFeaturedPlaylist(completion: @escaping (Result<FeaturedPlaylistsResponse, Error>)-> Void ) {
-        createRequest(with: URL(string: "\(Constants.baseAPIURL)/browse/featured-playlists?limit=2"), type: .GET) { [weak self] request in
+        createRequest(with: URL(string: "\(Constants.baseAPIURL)/browse/featured-playlists"), type: .GET) { [weak self] request in
             self?.createTask(with: request, completion: { (result) in
                 completion(result)
             })

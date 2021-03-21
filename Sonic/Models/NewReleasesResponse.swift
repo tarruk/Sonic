@@ -8,7 +8,7 @@
 import Foundation
 
 struct NewReleasesResponse: Codable {
-    let albums: AlbumResponse?
+    let albumResponse: AlbumResponse?
     let limit: Int?
     let next: String?
     let offSet: Int?
@@ -16,7 +16,7 @@ struct NewReleasesResponse: Codable {
     let total: Int?
     
     enum CodingKeys: String, CodingKey {
-        case albums = "albums"
+        case albumResponse = "albums"
         case limit = "limit"
         case next = "next"
         case offSet = "offset"
