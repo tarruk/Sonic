@@ -7,6 +7,18 @@
 
 import Foundation
 
+struct TracksResponse: Codable {
+    let tracks: [AudioTrack]
+    
+    enum CodingKeys: String, CodingKey {
+        case tracks = "items"
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.tracks = try container.decodeIfPresent([AudioTrack].self, forKey: .tracks) ?? []
+    }
+}
 struct AudioTrack: Codable {
     let album: Album?
     let artists: [Artist]

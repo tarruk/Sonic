@@ -22,8 +22,32 @@ final class APICaller {
         case failedToGetData
     }
     
+    //MARK: - Albums -
+    
+    public func getAlbumDetails(for album: Album, completion: @escaping (Result<AlbumDetails, Error>)-> Void ) {
+        guard let albumID = album.id else { return }
+        createRequest(with: URL(string: "\(Constants.baseAPIURL)/albums/\(albumID)"), type: .GET) { [weak self] baseRequest in
+            self?.createTask(with: baseRequest) { result in
+                completion(result)
+            }
+        }
+    }
     
     
+    //MARK: - Playlists -
+    public func getPlaylistDetails(for playlist: Playlist, completion: @escaping (Result<PlaylistDetail, Error>)-> Void ) {
+        guard let playlistID = playlist.id else { return }
+        createRequest(with: URL(string: "\(Constants.baseAPIURL)/playlists/\(playlistID)"), type: .GET) { [weak self] baseRequest in
+            self?.createTask(with: baseRequest) { result in
+                completion(result)
+            }
+        }
+    }
+    
+    //MARK: - Profile -
+    
+    
+    //MARK: - Profile -
     public func getCurrentUserProfile(completion: @escaping (Result<User, Error>)->Void) {
         createRequest(with: URL(string: "\(Constants.baseAPIURL)/me"), type: .GET) { [weak self] baseRequest in
             
@@ -34,6 +58,8 @@ final class APICaller {
         }
     }
     
+    
+    //MARK: - Browse -
     public func getRecommendedGenres(completion: @escaping(Result<RecommendedGenres, Error>) -> Void) {
         createRequest(with: URL(string: "\(Constants.baseAPIURL)/recommendations/available-genre-seeds"), type: .GET) { [weak self] baseRequest in
             self?.createTask(with: baseRequest, completion: { result in
