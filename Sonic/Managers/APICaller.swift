@@ -44,6 +44,47 @@ final class APICaller {
         }
     }
     
+    //MARK: - Category
+    
+    public func getCategories() -> Single<[MusicCategory]> {
+        return Single<[MusicCategory]>.create { [weak self] single -> Disposable in
+            self?.createRequest(with: URL(string: "\(Constants.baseAPIURL)/browse/categories"), type: .GET) { baseRequest in
+                self?.createTask(with: baseRequest, completion: { (result: Result<CategoriesResponse, Error>) in
+                    switch result {
+                    case .success(let categoriesResponse):
+                        let categories = categoriesResponse.categories?.items ?? []
+                        single(.success(categories))
+                    case .failure(let error):
+                        single(.failure(error))
+                    }
+                })
+            }
+            return Disposables.create()
+        }
+        
+    }
+    
+    public func getCategoryPlaylists(category: MusicCategory) -> Single<[Playlist]> {
+        return Single<[Playlist]>.create { [weak self] single -> Disposable in
+            guard let categoryID = category.id else {
+                return Disposables.create()
+            }
+            self?.createRequest(with: URL(string: "\(Constants.baseAPIURL)/browse/categories/\(categoryID)/playlists"), type: .GET) { baseRequest in
+                self?.createTask(with: baseRequest, completion: { (result: Result<CategoryPlaylistsResponse, Error>) in
+                    switch result {
+                    case .success(let playlistsResponse):
+                        let playlists = playlistsResponse.playlistsResponse?.playlists
+                        single(.success(playlists ?? []))
+                    case .failure(let error):
+                        single(.failure(error))
+                    }
+                })
+            }
+            return Disposables.create()
+        }
+        
+    }
+    
     //MARK: - Profile -
     
     
@@ -68,13 +109,22 @@ final class APICaller {
         }
     }
     
-    public func getRecommendations(genres: Set<String>, completion: @escaping(Result<Recommendation, Error>) -> Void) {
-        let seeds = genres.joined(separator: ",")
-        createRequest(with: URL(string: "\(Constants.baseAPIURL)/recommendations?seed_genres=\(seeds)"), type: .GET) { [weak self] baseRequest in
-            self?.createTask(with: baseRequest, completion: { result in
-                completion(result)
-            })
+    public func getRecommendations(genres: Set<String>) -> Single<Recommendation> {
+        return Single.create { single in
+            let seeds = genres.joined(separator: ",")
+            self.createRequest(with: URL(string: "\(Constants.baseAPIURL)/recommendations?seed_genres=\(seeds)"), type: .GET) { [weak self] baseRequest in
+                self?.createTask(with: baseRequest, completion: { (result: Result<Recommendation, Error>) in
+                    switch result {
+                    case .success(let recommendation):
+                        single(.success(recommendation))
+                    case .failure(let error):
+                        single(.failure(error))
+                    }
+                })
+            }
+            return Disposables.create()
         }
+        
     }
     
     public func getNewReleases(completion: @escaping ((Result<NewReleasesResponse, Error>) -> Void)) {

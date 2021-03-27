@@ -36,6 +36,18 @@ struct PlaylistDetail: Codable {
 }
 
 struct PlaylistTracksResponse: Codable {
+    let items: [PlaylistItem]
+    
+    enum CodingKeys: String, CodingKey {
+        case items = "items"
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.items = try container.decodeIfPresent([PlaylistItem].self, forKey: .items) ?? []
+    }
+}
+struct PlaylistItem: Codable {
     let track: AudioTrack?
     
     enum CodingKeys: String, CodingKey {

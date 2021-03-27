@@ -1,25 +1,14 @@
 //
-//  RecommendedTrackCollectionViewCell.swift
+//  AlbumTrackCollectionViewCell.swift
 //  Sonic
 //
-//  Created by Tarek on 21/03/2021.
+//  Created by Tarek on 26/03/2021.
 //
 
 import UIKit
 
-class RecommendedTrackCollectionViewCell: UICollectionViewCell {
-    static let identifier = "RecommendedTrackCollectionViewCell"
-    
-    
-    private let albumCoverImageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.image = UIImage(systemName: "photo")
-        imageView.layer.cornerRadius = 10
-        imageView.layer.masksToBounds = true
-        imageView.contentMode = .scaleAspectFill
-        return imageView
-    }()
-    
+class AlbumTrackCollectionViewCell: UICollectionViewCell {
+    static let identifier = "AlbumTrackCollectionViewCell"
     
     private let trackNameLabel: UILabel = {
        let label = UILabel()
@@ -42,7 +31,6 @@ class RecommendedTrackCollectionViewCell: UICollectionViewCell {
         super.init(frame: frame)
         contentView.backgroundColor = .secondarySystemBackground
         contentView.clipsToBounds = true
-        contentView.addSubview(albumCoverImageView)
         contentView.addSubview(trackNameLabel)
         contentView.addSubview(artistNameLabel)
         
@@ -55,24 +43,19 @@ class RecommendedTrackCollectionViewCell: UICollectionViewCell {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        albumCoverImageView.frame = CGRect(
-            x: 5,
-            y: 2,
-            width: contentView.height-4,
-            height: contentView.height-4
-        )
+
         
         trackNameLabel.frame = CGRect(
-            x: albumCoverImageView.right+10,
-            y: self.contentView.center.y-25,
-            width: contentView.width-albumCoverImageView.right-15,
+            x: 10,
+            y: 5,
+            width: width - 20,
             height: 25
         )
         
         artistNameLabel.frame = CGRect(
-            x: albumCoverImageView.right+10,
-            y: self.contentView.center.y,
-            width: contentView.width-albumCoverImageView.right-15,
+            x: 10,
+            y: contentView.height/2,
+            width: width - 20,
             height: 25
         )
     }
@@ -81,12 +64,10 @@ class RecommendedTrackCollectionViewCell: UICollectionViewCell {
         super.prepareForReuse()
         trackNameLabel.text = nil
         artistNameLabel.text = nil
-        albumCoverImageView.image = nil
     }
     
-    func configure(with viewModel: RecommendedTrackCellViewModel) {
+    func configure(with viewModel: AlbumTrackCellViewModel) {
         trackNameLabel.text = viewModel.name
         artistNameLabel.text = viewModel.artistName
-        albumCoverImageView.sd_setImage(with: viewModel.artworkURL, completed: nil)
     }
 }
