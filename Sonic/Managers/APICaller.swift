@@ -85,6 +85,36 @@ final class APICaller {
         
     }
     
+    //MARK: - Search
+    
+    public func search(with query: String) -> Observable<[SearchResult]> {
+        return Observable<[SearchResult]>.create { observer -> Disposable in
+            self.createRequest(with: URL(string: "\(Constants.baseAPIURL)/search?limit=10&type=album,artist,playlist,track&q=\(query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")"), type: .GET) { [weak self] baseRequest in
+                debugPrint(baseRequest.url?.absoluteString ?? "none")
+                self?.createTask(with: baseRequest, completion: { (result:Result<SearchResultResponse, Error>) in
+                    var searchResults = [SearchResult]()
+                    
+                    switch result {
+                    case .success(let queryResults):
+                        searchResults.append(contentsOf: queryResults.tracks?.items.compactMap({SearchResult.track(model: $0)}) ?? [])
+                        
+                        searchResults.append(contentsOf: queryResults.albums?.items.compactMap({SearchResult.album(model: $0)}) ?? [])
+                        
+                        searchResults.append(contentsOf: queryResults.artists?.items.compactMap({SearchResult.artist(model: $0)}) ?? [])
+                        
+                        searchResults.append(contentsOf: queryResults.playlists?.items.compactMap({SearchResult.playlist(model: $0)}) ?? [])
+                        observer.onNext(searchResults)
+                        observer.onCompleted()
+                    case .failure(let error):
+                        observer.onError(error)
+                    }
+                })
+            }
+            return Disposables.create()
+        }
+    }
+    
+    
     //MARK: - Profile -
     
     

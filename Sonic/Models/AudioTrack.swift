@@ -20,7 +20,7 @@ struct TracksResponse: Codable {
     }
 }
 struct AudioTrack: Codable {
-    let album: Album?
+    var album: Album?
     let artists: [Artist]
     let availableMarkets: [String]
     let discNumber: Int?
@@ -32,6 +32,7 @@ struct AudioTrack: Codable {
     let popularity: Int?
     let uri: String?
     let type: String?
+    let previewUrl: String?
     
     enum CodingKeys: String, CodingKey {
         case album = "album"
@@ -46,6 +47,7 @@ struct AudioTrack: Codable {
         case popularity = "popularity"
         case uri = "uri"
         case type = "type"
+        case previewUrl = "preview_url"
         
     }
     
@@ -63,5 +65,6 @@ struct AudioTrack: Codable {
         self.popularity     = try container.decodeIfPresent(Int.self, forKey: .popularity)
         self.uri    = try container.decodeIfPresent(String.self, forKey: .uri)
         self.type   = try container.decodeIfPresent(String.self, forKey: .type)
+        self.previewUrl = try container.decodeIfPresent(String.self, forKey: .previewUrl)
     }
 }

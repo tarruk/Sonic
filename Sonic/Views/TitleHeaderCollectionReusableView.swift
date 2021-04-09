@@ -12,7 +12,7 @@ class TitleHeaderCollectionReusableView: UICollectionReusableView {
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .white
+        label.textColor = .label
         label.numberOfLines = 1
         label.font = .systemFont(ofSize: 18, weight: .light)
         return label

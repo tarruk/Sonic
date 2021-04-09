@@ -44,7 +44,7 @@ struct Album: Codable {
     let externalsUrls: ExternalUrls?
     let href: String?
     let id: String?
-    let images: [CustomImage]
+    var images: [CustomImage]
     let name: String?
     let releaseDate: String?
     let releaseDatePrecision: String?
@@ -68,6 +68,24 @@ struct Album: Codable {
         case uri = "uri"
     }
     
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        self.albumType = try container.decodeIfPresent(String.self, forKey: .albumType)
+        self.artists = try container.decodeIfPresent([Artist].self, forKey: .artists) ?? []
+        self.avaiableMarkets = try container.decodeIfPresent([String].self, forKey: .avaiableMarkets) ?? []
+        self.externalsUrls = try container.decodeIfPresent(ExternalUrls.self, forKey: .externalsUrls)
+        self.href = try container.decodeIfPresent(String.self, forKey: .href)
+        self.id = try container.decodeIfPresent(String.self, forKey: .id)
+        self.images = try container.decodeIfPresent([CustomImage].self, forKey: .images) ?? []
+        self.name = try container.decodeIfPresent(String.self, forKey: .name)
+        self.releaseDate = try container.decodeIfPresent(String.self, forKey: .releaseDate)
+        self.releaseDatePrecision = try container.decodeIfPresent(String.self, forKey: .releaseDatePrecision)
+        self.totalTracks = try container.decodeIfPresent(Int.self, forKey: .totalTracks)
+        self.type = try container.decodeIfPresent(String.self, forKey: .type)
+        self.uri = try container.decodeIfPresent(String.self, forKey: .uri)
+    }
+    
     
 }
 
@@ -78,6 +96,7 @@ struct Artist: Codable {
     let name: String?
     let type: String?
     let uri: String?
+    let images: [CustomImage]?
     
     
     enum CodingKeys: String, CodingKey {
@@ -87,5 +106,6 @@ struct Artist: Codable {
         case name = "name"
         case type = "type"
         case uri = "uri"
+        case images = "images"
     }
 }

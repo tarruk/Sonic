@@ -4,7 +4,7 @@
 //
 //  Created by Tarek on 19/03/2021.
 //
-
+import SafariServices
 import UIKit
 import RxSwift
 class SearchViewController: UIViewController {
@@ -60,7 +60,7 @@ class SearchViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-        searchController.searchResultsUpdater = self
+       
         navigationItem.searchController = searchController
         view.addSubview(collectionView)
         collectionView.register(CategoryCollectionViewCell.self, forCellWithReuseIdentifier: CategoryCollectionViewCell.identifier)
@@ -80,6 +80,13 @@ class SearchViewController: UIViewController {
                 onFailure: { error in
                     debugPrint(error)
                 }).disposed(by: disposeBag)
+        
+        searchController.searchBar.rx
+            .searchButtonClicked
+            .subscribe(
+                onNext: { [weak self] _ in
+                    self?.updateSearchResults()
+                }).disposed(by: disposeBag)
     }
     
     override func viewDidLayoutSubviews() {
@@ -87,19 +94,31 @@ class SearchViewController: UIViewController {
         collectionView.frame = view.bounds
     }
     
-    
-
-}
-extension SearchViewController: UISearchResultsUpdating {
-    func updateSearchResults(for searchController: UISearchController) {
+    private func updateSearchResults() {
         guard let resultController = searchController.searchResultsController as? SearchResultsViewController,
               let query = searchController.searchBar.text,
               !query.trimmingCharacters(in: .whitespaces).isEmpty else {
             return
         }
+        resultController.delegate = self
+        
         //Perform search
+        APICaller.shared
+            .search(with: query)
+            .observe(on: MainScheduler.instance)
+            .subscribe(
+                onNext: { results in
+                    resultController.update(with: results)
+                },
+                onError: { error in
+                
+                }).disposed(by: disposeBag)
     }
+    
+    
+
 }
+
 
 extension SearchViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     
@@ -132,4 +151,28 @@ extension SearchViewController: UICollectionViewDelegate, UICollectionViewDataSo
     }
     
     
+}
+
+extension SearchViewController: SearchResultsViewControllerDelegate {
+    func didTapResult(_ result: SearchResult) {
+        switch result {
+        case .album(let album):
+            let vc = AlbumViewController(album: album)
+            vc.navigationItem.largeTitleDisplayMode = .never
+            navigationController?.pushViewController(vc, animated: true)
+        case .artist(let artist):
+            guard let url = URL(string: artist.externalUrls?.spotify ?? "") else {
+                return
+            }
+            let vc = SFSafariViewController(url: url)
+            present(vc, animated: true)
+            
+        case .playlist(let playlist):
+            let vc = PlaylistViewController(playlist: playlist)
+            vc.navigationItem.largeTitleDisplayMode = .never
+            navigationController?.pushViewController(vc, animated: true)
+        case .track(let track):
+            PlaybackPresenter.shared.startPlayback(from: self, track: track)
+        }
+    }
 }

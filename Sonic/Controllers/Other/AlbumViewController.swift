@@ -47,7 +47,7 @@ class AlbumViewController: UIViewController {
     )
     
     private var viewModels = [AlbumTrackCellViewModel]()
-    
+    private var tracks = [AudioTrack]()
     
     init(album: Album) {
         self.album = album
@@ -82,6 +82,7 @@ class AlbumViewController: UIViewController {
                 switch result {
                 case .success(let model):
                     guard let tracks = model.tracks?.tracks else { return }
+                    self?.tracks = model.tracks?.tracks ?? []
                     self?.viewModels = tracks.compactMap({
                         return AlbumTrackCellViewModel(
                             name: $0.name ?? "",
@@ -145,9 +146,32 @@ extension AlbumViewController: UICollectionViewDataSource, UICollectionViewDeleg
                             description: "Release date: \(String.formatDate(string: album.releaseDate ?? ""))",
                             artworkURL: URL(string: album.images.first?.url ?? ""))
         )
-        
+        header.delegate = self
         return header
     }
     
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        collectionView.deselectItem(at: indexPath, animated: true)
+        var track = tracks[indexPath.row]
+        track.album = album
+        PlaybackPresenter.shared.startPlayback(from: self, tracks: tracks)
+    }
     
+    
+}
+
+
+extension AlbumViewController: PlaylistHeaderCollectionReusableViewDelegate {
+    func playlistHeaderCollectionReusableViewDidTapPlayAll(_ header: PlaylistHeaderCollectionReusableView) {
+        //Start play list play in queue
+    
+        let tracksWithAlbum: [AudioTrack] = tracks.compactMap({
+            var track = $0
+            track.album = self.album
+            return track
+        })
+        PlaybackPresenter.shared.startPlayback(from: self, tracks: tracksWithAlbum)
+    }
+    
+   
 }
