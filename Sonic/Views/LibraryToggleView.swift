@@ -20,7 +20,7 @@ class LibraryToggleView: UIView {
         case albums
     }
     
-    private var currentState: State = .playlists
+    var currentState: State = .playlists
     
     private let indicatorView: UIView = {
         let view = UIView()

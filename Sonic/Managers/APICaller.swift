@@ -9,6 +9,8 @@ import Foundation
 import RxSwift
 import RxCocoa
 
+
+
 final class APICaller {
     static let shared = APICaller()
     
@@ -20,6 +22,7 @@ final class APICaller {
     
     enum APIError: Error {
         case failedToGetData
+        case failedToDecodeData
     }
     
     //MARK: - Albums -
@@ -113,7 +116,68 @@ final class APICaller {
             return Disposables.create()
         }
     }
-    
+    //MARK: - Library
+    public func getCurrentUserPlaylists() -> Observable<[Playlist]>{
+        return Observable<[Playlist]>.create { observer in
+            self.createRequest(with: URL(string: "\(Constants.baseAPIURL)/me/playlists"), type: .GET) { [weak self] baseRequest in
+                
+                self?.createTask(with: baseRequest, completion: { (result: Result<PlaylistsResponse, Error>) in
+                   
+                    switch result {
+                    case .success(let playlistResponse):
+                        observer.onNext(playlistResponse.playlists)
+                        observer.onCompleted()
+                        
+                    case .failure:
+                        observer.onError(APIError.failedToGetData)
+                    }
+                    
+                })
+                
+            }
+            return Disposables.create()
+        }
+    }
+    public func createPlaylist(with name: String) -> Observable<Playlist> {
+        return Observable.create { observer in
+            self.getCurrentUserProfile { [weak self] result in
+                switch result {
+                case .success(let user):
+                    guard let userID = user.id else {
+                        return
+                    }
+                    let urlString = "\(Constants.baseAPIURL)/users/\(userID)/playlists"
+                    self?.createRequest(with: URL(string: urlString), type: .POST, completion: { [weak self] baseRequest in
+                        var request = baseRequest
+                        let params = ["name" : name]
+                        request.httpBody = try? JSONSerialization.data(withJSONObject: params, options: .fragmentsAllowed)
+                        self?.createTask(with: request, completion: { (result: Result<Playlist, Error>) in
+                            switch result {
+                            case .success(let playlists):
+                                observer.onNext(playlists)
+                                observer.onCompleted()
+                            case .failure(let error):
+                                observer.onError(error)
+                            }
+                        })
+                    })
+                case .failure(let error):
+                    print(error.localizedDescription)
+                }
+            }
+            return Disposables.create()
+        }
+    }
+    public func addTrackToPlaylist(track: AudioTrack, playlist: Playlist) -> Observable<Bool> {
+        return Observable.create { observer in
+            return Disposables.create()
+        }
+    }
+    public func removeTrackFromPlaylist(track: AudioTrack, playlist: Playlist) -> Observable<Bool> {
+        return Observable.create { observer in
+            return Disposables.create()
+        }
+    }
     
     //MARK: - Profile -
     
@@ -196,6 +260,36 @@ final class APICaller {
         }
         
         
+    }
+    
+    
+    private func createTask<T: Codable>(request: URLRequest) -> Observable<T> {
+        return Observable<T>.create { observer in
+            
+            let task = URLSession.shared.dataTask(with: request) { (data, _, error) in
+                
+                LoggerManager.shared.printRequest(from: request)
+                guard let data = data, error == nil else {
+                    observer.onError(APIError.failedToGetData)
+                    return
+                }
+                
+                do {
+                    let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments)
+                    print(json)
+                    let model = try JSONDecoder().decode(T.self, from: data)
+                    LoggerManager.shared.printJSON(from: model)
+                    observer.onNext(model)
+                    observer.onCompleted()
+                } catch {
+                    observer.onError(APIError.failedToDecodeData)
+                }
+            }
+            task.resume()
+            
+            
+            return Disposables.create()
+        }
     }
     
     private func createTask<T: Codable>(with request : URLRequest, completion: @escaping (Result<T, Error>)->Void) {
