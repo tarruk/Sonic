@@ -45,7 +45,7 @@ class RecommendedTrackCollectionViewCell: UICollectionViewCell {
         contentView.addSubview(albumCoverImageView)
         contentView.addSubview(trackNameLabel)
         contentView.addSubview(artistNameLabel)
-        
+        setConstrains()
         
     }
 
@@ -53,28 +53,26 @@ class RecommendedTrackCollectionViewCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        albumCoverImageView.frame = CGRect(
-            x: 5,
-            y: 2,
-            width: contentView.height-4,
-            height: contentView.height-4
-        )
+    
+    private func setConstrains() {
+        [albumCoverImageView, trackNameLabel, artistNameLabel].forEach({
+            $0.translatesAutoresizingMaskIntoConstraints = false
+        })
         
-        trackNameLabel.frame = CGRect(
-            x: albumCoverImageView.right+10,
-            y: self.contentView.center.y-25,
-            width: contentView.width-albumCoverImageView.right-15,
-            height: 25
-        )
+        albumCoverImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 5).isActive = true
+        albumCoverImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 2).isActive = true
+        albumCoverImageView.widthAnchor.constraint(equalToConstant: contentView.height-4).isActive = true
+        albumCoverImageView.heightAnchor.constraint(equalToConstant: contentView.height-4).isActive = true
         
-        artistNameLabel.frame = CGRect(
-            x: albumCoverImageView.right+10,
-            y: self.contentView.center.y,
-            width: contentView.width-albumCoverImageView.right-15,
-            height: 25
-        )
+        trackNameLabel.leadingAnchor.constraint(equalTo: albumCoverImageView.trailingAnchor, constant: 10).isActive = true
+        trackNameLabel.topAnchor.constraint(equalTo: contentView.centerYAnchor, constant: -25).isActive = true
+        trackNameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: 5).isActive = true
+        trackNameLabel.heightAnchor.constraint(equalToConstant: 25).isActive = true
+        
+        artistNameLabel.leadingAnchor.constraint(equalTo: albumCoverImageView.trailingAnchor, constant: 10).isActive = true
+        artistNameLabel.topAnchor.constraint(equalTo: contentView.centerYAnchor, constant: 0).isActive = true
+        artistNameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: 5).isActive = true
+        artistNameLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: 5).isActive = true
     }
     
     override func prepareForReuse() {
